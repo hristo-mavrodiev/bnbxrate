@@ -1,11 +1,14 @@
 import sys
 import datetime
+from time import sleep
 import requests
 from bs4 import BeautifulSoup as soup
 from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry
+from pprint import pprint as pp
 import logging
 logger = logging.getLogger(__name__)
+logging.basicConfig(format='%(message)s', level=logging.INFO)
 
 
 class BNB:
@@ -17,8 +20,8 @@ class BNB:
         self.url = None
         self.valutes = 'USD'
         self.rate = None
-    
-    def get_page_content(url):
+
+    def get_page_content(self, url):
         """
         Function to use requests.get on provided url with retry and delay between retries.
         """
@@ -37,27 +40,68 @@ class BNB:
         except Exception as exe:
             logger.error(f"Unable to load the url {exe}")
             return None
-            
-    def get_rate(self, date_str):
-        pass
-    
-    def usage(self):
-        pass
-        
-    def run_command(self, command):
-        "Listen for cmd commands and execute it"
-        command = command.pop(0)
-        list_commands = ['USD']
-        if command not in list_commands:
-            logger.warning(f'ERROR: Unrecognised command {command}')
-            BNB.usage()
-            sys.exit(1)
-            
 
-        
+    def get_rate(self, datetime_str):
+        # url = f'https://www.zacks.com/stock/quote/{ticker}/financial-overview'
+        target_date = datetime.datetime.strptime(datetime_str, '%d.%m.%Y')
+        one_week_before = target_date - datetime.timedelta(days=7)
+        T_DAY = f"{target_date.day:02d}"
+        T_MONTH = f"{target_date.month:02d}"
+        T_YEAR = target_date.year
+
+        S_DAY = f"{one_week_before.day:02d}"
+        S_MONTH = f"{one_week_before.month:02d}"
+        S_YEAR = one_week_before.year
+        logger.debug(target_date.year)
+        logger.debug(target_date)
+        logger.debug(one_week_before)
+        url = (f'http://bnb.bg/Statistics/StExternalSector/StExchangeRates/StERForeignCurrencies/index.htm?'
+               f'downloadOper=&group1=second&periodStartDays={S_DAY}&periodStartMonths={S_MONTH}'
+               f'&periodStartYear={S_YEAR}'
+               f'&periodEndDays={T_DAY}&periodEndMonths={T_MONTH}&periodEndYear={T_YEAR}&valutes=USD'
+               '&search=true&showChart=false&showChartButton=true&type=CSV'
+               )
+        logger.debug(url)
+        try:
+            soup_bnb = soup(self.get_page_content(url).content, "html.parser")
+            # print(soup_bnb)
+            # form = soup_bnb.find('form', {'name': 'Exchange_Rate_Search'})
+            # result_message = form.find('p')
+            # print(result_message.text)
+            # for res in result_message:
+            #    print(res.text)
+            # div = soup_bnb.find('div', {'class': 'table_box '})  # table_scroll
+            table = soup_bnb.find('tbody')
+            for row in table.findAll("tr"):
+                values = row.findAll("td")
+                # print(values[0].text, ' -----', values[2].text)
+                last_date = values[0].text
+                last_value = values[2].text
+            return {last_date: last_value}
+        except Exception as exe:
+            logger.error(exe)
+            return {datetime_str: None}
+
+    def usage(self):
+        logger.warning("Usage:\n bnbxrate '05.01.2020' \n The date is in format:%d.%m.%Y")
+
+    # def run_command(self, command):
+    #     "Listen for cmd commands and execute it"
+    #     command = command.pop(0)
+    #     list_commands = ['USD']
+    #     if command not in list_commands:
+    #         logger.warning(f'ERROR: Unrecognised command {command}')
+    #         self.usage()
+    #         sys.exit(1)
+
+
 def main():
     try:
         command = sys.argv[1:]
-        BNB().run_command(command)
+        print(BNB().get_rate(str(command.pop(0))))
     except Exception as exe:
-        print(exe)
+        logger.error(exe)
+
+
+if __name__ == '__main__':
+    pp(BNB().get_rate('05.04.2020'))
