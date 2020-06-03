@@ -16,10 +16,8 @@ class BNB:
     Webscrape BNB exchange rates for provided date.
     """
     def __ini__(self):
-        self.date_str = None
-        self.url = None
         self.valutes = 'USD'
-        self.rate = None
+        # self.rate = None
 
     def get_page_content(self, url):
         """
@@ -42,7 +40,15 @@ class BNB:
             return None
 
     def get_rate(self, datetime_str):
-        # url = f'https://www.zacks.com/stock/quote/{ticker}/financial-overview'
+        """
+        The actual webscraping from bnb.bg
+        Input:
+        --------
+        datetime_str - string with the date - format %d.%m.%Y
+        
+        Output:
+        dictionary{date: USD/BGN exchange rate}
+        """
         target_date = datetime.datetime.strptime(datetime_str, '%d.%m.%Y')
         one_week_before = target_date - datetime.timedelta(days=7)
         T_DAY = f"{target_date.day:02d}"
@@ -64,13 +70,6 @@ class BNB:
         logger.debug(url)
         try:
             soup_bnb = soup(self.get_page_content(url).content, "html.parser")
-            # print(soup_bnb)
-            # form = soup_bnb.find('form', {'name': 'Exchange_Rate_Search'})
-            # result_message = form.find('p')
-            # print(result_message.text)
-            # for res in result_message:
-            #    print(res.text)
-            # div = soup_bnb.find('div', {'class': 'table_box '})  # table_scroll
             table = soup_bnb.find('tbody')
             for row in table.findAll("tr"):
                 values = row.findAll("td")
@@ -85,21 +84,12 @@ class BNB:
     def usage(self):
         logger.warning("Usage:\n bnbxrate '05.01.2020' \n The date is in format:%d.%m.%Y")
 
-    # def run_command(self, command):
-    #     "Listen for cmd commands and execute it"
-    #     command = command.pop(0)
-    #     list_commands = ['USD']
-    #     if command not in list_commands:
-    #         logger.warning(f'ERROR: Unrecognised command {command}')
-    #         self.usage()
-    #         sys.exit(1)
-
-
 def main():
     try:
         command = sys.argv[1:]
         print(BNB().get_rate(str(command.pop(0))))
     except Exception as exe:
+        BNB.usage()
         logger.error(exe)
 
 
