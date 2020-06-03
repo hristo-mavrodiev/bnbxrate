@@ -1,5 +1,7 @@
 # bnbxrate
 
+[![Build Status](https://travis-ci.com/hristo-mavrodiev/bnbxrate.svg?branch=master)](https://travis-ci.com/hristo-mavrodiev/bnbxrate)
+
 Provides historical exchange rates USD/BGN for a given date. The main source of the data is Bulgarian National Bank - ![bnb.bg](http://bnb.bg/Statistics/StExternalSector/StExchangeRates/StERForeignCurrencies/index.htm?toLang=_EN).
 
 ## Usage
