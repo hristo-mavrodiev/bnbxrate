@@ -21,7 +21,8 @@ class BNB:
 
     def get_page_content(self, url):
         """
-        Function to use requests.get on provided url with retry and delay between retries.
+        Function to use requests.on provided url,
+         with retry and delay between retries.
         """
         s = requests.Session()
         retries = Retry(total=5,
@@ -45,7 +46,7 @@ class BNB:
         Input:
         --------
         datetime_str - string with the date - format %d.%m.%Y
-        
+
         Output:
         dictionary{date: USD/BGN exchange rate}
         """
@@ -84,12 +85,13 @@ class BNB:
     def usage(self):
         logger.warning("Usage:\n bnbxrate '05.01.2020' \n The date is in format:%d.%m.%Y")
 
+
 def main():
     try:
         command = sys.argv[1:]
         print(BNB().get_rate(str(command.pop(0))))
     except Exception as exe:
-        BNB.usage()
+        BNB().usage()
         logger.error(exe)
 
 
